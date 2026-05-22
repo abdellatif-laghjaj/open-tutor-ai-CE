@@ -179,6 +179,20 @@ async def upload_support_file(
     Upload a file for a support request
     """
     try:
+        session = get_db_session()
+        try:
+            support = (
+                session.query(Support)
+                .filter(Support.id == support_id, Support.user_id == user.id)
+                .first()
+            )
+            if not support:
+                raise HTTPException(
+                    status_code=404, detail="Support request not found"
+                )
+        finally:
+            session.close()
+
         # Generate a unique filename
         file_id = str(uuid.uuid4())
         file_extension = os.path.splitext(file.filename)[1]
@@ -207,6 +221,8 @@ async def upload_support_file(
         finally:
             session.close()
 
+    except HTTPException:
+        raise
     except Exception as e:
         log.error(f"Error uploading file: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to upload file: {str(e)}")
