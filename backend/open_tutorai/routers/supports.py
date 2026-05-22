@@ -187,9 +187,7 @@ async def upload_support_file(
                 .first()
             )
             if not support:
-                raise HTTPException(
-                    status_code=404, detail="Support request not found"
-                )
+                raise HTTPException(status_code=404, detail="Support request not found")
         finally:
             session.close()
 
