@@ -40,17 +40,18 @@ app = FastAPI(
     version=VERSION,
 )
 
-# Handle wildcard origin with credentials by reflecting request origin
+# Do not combine wildcard origins with credentialed CORS.
 origins = CORS_ALLOW_ORIGIN
 allow_origin_regex = None
+allow_credentials = True
 if "*" in origins:
-    origins = []
-    allow_origin_regex = ".*"
+    origins = ["*"]
+    allow_credentials = False
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_origin_regex=allow_origin_regex,
-    allow_credentials=True,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
