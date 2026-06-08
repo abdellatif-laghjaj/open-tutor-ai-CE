@@ -24,3 +24,14 @@ update:
 	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down
 	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up --build -d
 	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) start
+
+# ── Local development validation ─────────────────────────────────────────────
+
+lint:
+	~/.pyenv/versions/tutorai-env/bin/pre-commit run --all-files
+
+test:
+	~/.pyenv/versions/tutorai-env/bin/pytest -q --tb=short
+	cd ui && npm run test:frontend
+
+check: lint test

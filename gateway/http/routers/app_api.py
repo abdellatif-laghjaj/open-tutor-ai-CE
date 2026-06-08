@@ -313,6 +313,7 @@ async def _stream_to_socket(
         await _emit({"error": {"message": str(exc)}, "done": True})
 
 
+@router.post("/chat/completions")
 @router.post("/v1/chat/completions")
 async def chat_completions(
     body: Dict[str, Any],
@@ -324,6 +325,8 @@ async def chat_completions(
     The HTTP response returns immediately. Token streaming is delivered to the
     browser via Socket.IO `chat-events` (mirrors OpenWebUI socket architecture).
     For non-streaming requests the LLM response is returned directly as JSON.
+
+    Supports both /api/chat/completions and /api/v1/chat/completions.
     """
     from gateway.realtime.socket import SESSION_POOL
 
