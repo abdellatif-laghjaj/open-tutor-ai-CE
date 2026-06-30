@@ -5,6 +5,7 @@
 	import { toast } from 'svelte-sonner';
 	import { user } from '$lib/stores';
 	import { createSupport, uploadSupportFile, updateSupportChatId } from '$lib/apis/supports';
+	import { createPendingSupportData } from '$lib/utils/pendingSupport';
 	import { createNewChat } from '$lib/apis/chats';
 	import { v4 as uuidv4 } from 'uuid';
 	import type { Writable } from 'svelte/store';
@@ -532,11 +533,7 @@
 
 				// Store the support ID in localStorage for later update with chat ID,
 				// including a timestamp and attempt counter
-				const supportData = {
-					id: supportResponse.id,
-					timestamp: Date.now(),
-					attempts: 0
-				};
+				const supportData = createPendingSupportData(supportResponse);
 				localStorage.setItem('pendingSupportData', JSON.stringify(supportData));
 				pendingSupportId = supportResponse.id;
 

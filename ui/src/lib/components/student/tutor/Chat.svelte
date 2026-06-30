@@ -83,6 +83,7 @@
 	} from '$lib/apis';
 	import { getTools } from '$lib/apis/tools';
 	import { getSupportById } from '$lib/apis/supports';
+	import { parsePendingSupportData } from '$lib/utils/pendingSupport';
 	import { getTutorSystemPrompt } from '$lib/apis/configs';
 
 	import Banner from '$lib/components/common/Banner.svelte';
@@ -155,6 +156,15 @@
 	let chatFiles = [];
 	let files = [];
 	let params = {};
+
+	const getPendingSupportData = () => {
+		const raw = localStorage.getItem('pendingSupportData');
+		if (!raw || !$user?.id) return null;
+
+		const data = parsePendingSupportData(raw, $user.id);
+		if (!data) localStorage.removeItem('pendingSupportData');
+		return data;
+	};
 
 	// Make avatarActive reactive to settings changes
 	// This ensures avatarActive updates whenever settings.avatarEnabled changes
@@ -949,7 +959,6 @@
 			// Add general instruction
 			systemPrompt += `\nYour goal is to help the student achieve their learning objective by providing clear explanations, examples, analogies, and guided practice appropriate for their level. Adjust your teaching style, complexity, and examples based on their interactions. Be engaging, supportive, and patient throughout the learning process.\n\n`;
 
-			//systemPrompt+= promptData;
 			// Add reminder to stay focused on the topic and not ask redundant questions - STRENGTHENED
 			systemPrompt += `FINAL REMINDER: DO NOT ask the student about information they've already provided such as their educational level, background, or learning goals. Instead, directly begin helping them with their learning objective. Always keep your responses relevant to the topic (${supportDetails.title}) and learning objectives described above. Your role is to provide structured guidance on this specific subject matter. If the student says only "hello" or provides a very brief message, jump straight into teaching the topic - don't waste time with preliminary questions.`;
 			systemPrompt += promptData.prompt;
@@ -1098,18 +1107,20 @@
 		setTimeout(() => chatInput?.focus(), 0);
 
 		// Check for pending support data and add system prompt if exists
-		const rawPendingSupport = localStorage.getItem('pendingSupportData');
-		if (rawPendingSupport) {
+		const pendingSupport = getPendingSupportData();
+		if (pendingSupport) {
 			try {
-				const supportData = JSON.parse(rawPendingSupport);
-				if (supportData && supportData.id) {
+				if (pendingSupport.id) {
 					// Fetch support once — used for both system prompt and file injection
 					const token = localStorage.getItem('token');
-					const supportDetails = token ? await getSupportById(token, supportData.id) : null;
+					const supportDetails = token ? await getSupportById(token, pendingSupport.id) : null;
 
 					if (supportDetails) {
 						// Build and inject system prompt
-						const systemPrompt = await generateSupportSystemPrompt(supportData.id, supportDetails);
+						const systemPrompt = await generateSupportSystemPrompt(
+							pendingSupport.id,
+							supportDetails
+						);
 						if (systemPrompt) {
 							const systemMessageId = uuidv4();
 							history.messages[systemMessageId] = {
@@ -2570,10 +2581,9 @@
 				let supportId = null;
 				let supportTitle = null;
 				try {
-					const pendingSupportData = localStorage.getItem('pendingSupportData');
-					if (pendingSupportData) {
-						const supportData = JSON.parse(pendingSupportData);
-						supportId = supportData?.id || null;
+					const pendingSupport = getPendingSupportData();
+					if (pendingSupport) {
+						supportId = pendingSupport.id;
 
 						// Try to get support title to use as chat title
 						if (supportId) {

@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { getSupportById, deleteSupport } from '$lib/apis/supports';
+	import { createPendingSupportData } from '$lib/utils/pendingSupport';
 	import type { Writable } from 'svelte/store';
 	import { browser } from '$app/environment';
 	import ConfirmDialog from '$lib/components/student/elements/ConfirmDialog.svelte';
@@ -187,11 +188,7 @@
 		}
 
 		// Save support data to localStorage for chat linking
-		const supportData = {
-			id: support.id,
-			timestamp: Date.now(),
-			attempts: 0
-		};
+		const supportData = createPendingSupportData(support);
 
 		localStorage.setItem('pendingSupportData', JSON.stringify(supportData));
 		console.log('Saved support ID to localStorage:', support.id);
