@@ -200,7 +200,7 @@ async def get_support(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Support not found"
         )
-    if support.user_id != current_user.id and not current_user.is_admin:
+    if support.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
         )

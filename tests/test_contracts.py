@@ -144,6 +144,21 @@ class TestSupportsApiV1:
         assert r.status_code == 200
         assert r.json()["id"] == created["id"]
 
+    def test_get_by_id_is_owner_only_even_for_admin(self, client):
+        admin_token = _signup(client, "admin@test.com", "Admin")
+        student_token = _signup(client, "student@test.com", "Student")
+        support = client.post(
+            "/api/v1/supports/create",
+            json={"title": "Student objective", "subject": "Math"},
+            headers=_auth_header(student_token),
+        ).json()
+
+        r = client.get(
+            f"/api/v1/supports/{support['id']}", headers=_auth_header(admin_token)
+        )
+
+        assert r.status_code == 403
+
     def test_update_chat_id(self, client):
         """PATCH /api/v1/supports/{id}/update-chat  ← updateSupportChatId() in supports/index.ts:223"""
         token = _signup(client)
