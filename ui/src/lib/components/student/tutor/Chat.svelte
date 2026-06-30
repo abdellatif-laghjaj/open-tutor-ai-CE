@@ -846,7 +846,8 @@
 			// Construct system prompt — base persona from platform config, then session-specific context
 			const _basePrompt = await getTutorSystemPrompt(token);
 			const _fallback = `You are a highly experienced educator, instructional designer, and tutor. You specialize in creating clear, engaging, and progressive step-by-step lessons for any topic and any academic level. You combine best practices in pedagogy (e.g., scaffolding, active recall, formative feedback) with adaptive teaching strategies. Your role is to guide the learner one concept at a time, combining effective teaching strategies, personalized communication style, and the most suitable reasoning method, in a way that is tailored to their needs, level, and learning goals.`;
-			let systemPrompt = (_basePrompt || _fallback).trimEnd() + `\n\n`;
+			let systemPrompt = (_basePrompt || _fallback).trimEnd() + `\n\n${promptData.prompt}\n\n`;
+			systemPrompt += `PERSONALIZED SUPPORT CONTEXT: The student-specific details below are authoritative and override generic guidance or shared course materials when they conflict. Never reuse another learner's objectives.\n\n`;
 			systemPrompt += `For this session, you are specializing in ${supportDetails.subject || 'various subjects'}`;
 
 			if (supportDetails.custom_subject) {
@@ -961,7 +962,6 @@
 
 			// Add reminder to stay focused on the topic and not ask redundant questions - STRENGTHENED
 			systemPrompt += `FINAL REMINDER: DO NOT ask the student about information they've already provided such as their educational level, background, or learning goals. Instead, directly begin helping them with their learning objective. Always keep your responses relevant to the topic (${supportDetails.title}) and learning objectives described above. Your role is to provide structured guidance on this specific subject matter. If the student says only "hello" or provides a very brief message, jump straight into teaching the topic - don't waste time with preliminary questions.`;
-			systemPrompt += promptData.prompt;
 			return systemPrompt;
 		} catch (error) {
 			console.error('Error generating support system prompt:', error);
